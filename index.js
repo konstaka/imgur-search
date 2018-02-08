@@ -4,6 +4,9 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
+const cors = require('cors')
+app.use(cors())
+app.use(express.static('build'))
 
 const axios = require('axios')
 const auth = 'Client-ID cdb134ace1696e1'
@@ -62,7 +65,7 @@ axios.get(request_url, { 'headers': {
   'Authorization': auth
 }})
   .then(res => {
-    console.log('yey')
+    console.log('Connected to Imgur')
     for (i = 0; i < 100; i++) {
       const data = res.data.data[i]
       const newdatapoint = new Imagemeta({
@@ -105,6 +108,8 @@ axios.get(request_url, { 'headers': {
       newdatapoint.save()
     }
 
+    console.log('Image metadata retrieved')
+
 
   })
   .catch(error => {
@@ -120,22 +125,21 @@ app.post('/search', (req, res) => {
 
   const query = Imagemeta.find({
     "title": { $regex: searchTerm, $options: 'i'}
-  }, 'title', (err, entry) => {
+  }, 'link', (err, entry) => {
     if (err) {
       console.log(err)
       console.log('error 9000')
     } else {
-      console.log(typeof(entry))
       console.log(entry)
+
+      res.send(entry)
     }
   }
-)
-
-})
+)})
 
 
 
 const PORT = 3001
 app.listen(PORT, () => {
-  console.log(`Search API running on port ${PORT}`)
+  console.log(`Search API server running on port ${PORT}`)
 })
