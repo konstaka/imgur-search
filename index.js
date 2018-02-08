@@ -1,4 +1,9 @@
-console.log('toimii')
+console.log('Imgur viral search engine v0.1')
+
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+app.use(bodyParser.json())
 
 const axios = require('axios')
 const auth = 'Client-ID cdb134ace1696e1'
@@ -10,6 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const db_url = process.env.MONGODB_URI
 mongoose.connect(db_url)
+
 
 
 const Imagemeta = mongoose.model('Imagemeta', {
@@ -49,19 +55,87 @@ const Imagemeta = mongoose.model('Imagemeta', {
   images: Array
 })
 
+Imagemeta.collection.drop()
+
+
 axios.get(request_url, { 'headers': {
   'Authorization': auth
 }})
   .then(res => {
     console.log('yey')
-    
-    for (i = 1; i <= 100; i++) {
-      counter++
-    }
+    for (i = 0; i < 100; i++) {
+      const data = res.data.data[i]
+      const newdatapoint = new Imagemeta({
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        datetime: data.number,
+        cover: data.cover,
+        cover_width: data.cover_width,
+        cover_height: data.cover_height,
+        account_url: data.account_url,
+        account_id: data.account_id,
+        privacy: data.privacy,
+        layout: data.layout,
+        views: data.views,
+        link: data.link,
+        ups: data.ups,
+        downs: data.downs,
+        points: data.points,
+        score: data.score,
+        is_album: data.is_album,
+        vote: data.vote,
+        favorite: data.favorite,
+        nsfw: data.nsfw,
+        section: data.section,
+        comment_count: data.comment_count,
+        favorite_count: data.favorite_count,
+        topic: data.topic,
+        topic_id: data.topic_id,
+        images_count: data.images_count,
+        in_gallery: data.in_gallery,
+        is_ad: data.is_ad,
+        tags: data.tags,
+        ad_type: data.ad_type,
+        ad_url: data.ad_url,
+        in_most_viral: data.in_most_viral,
+        images: data.images
+      })
 
+      newdatapoint.save()
+    }
 
 
   })
   .catch(error => {
     console.log(error)
   })
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.post('/search', (req, res) => {
+  const searchTerm = req.body.search
+
+  const query = Imagemeta.find({
+    "title": { $regex: searchTerm, $options: 'i'}
+  }, 'title', (err, entry) => {
+    if (err) {
+      console.log(err)
+      console.log('error 9000')
+    } else {
+      console.log(typeof(entry))
+      console.log(entry)
+    }
+  }
+)
+
+})
+
+
+
+const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Search API running on port ${PORT}`)
+})
