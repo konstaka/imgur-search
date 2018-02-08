@@ -125,7 +125,7 @@ app.post('/search', (req, res) => {
 
   const query = Imagemeta.find({
     "title": { $regex: searchTerm, $options: 'i'}
-  }, 'link', (err, entry) => {
+  }, 'id', (err, entry) => {
     if (err) {
       console.log(err)
       console.log('error 9000')
